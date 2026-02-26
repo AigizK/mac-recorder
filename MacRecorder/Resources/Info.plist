@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>MacRecorder</string>
+    <key>CFBundleDisplayName</key>
+    <string>Mac Recorder</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.macrecorder.app</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundleShortVersionString</key>
+    <string>0.2.0</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>14.0</string>
+    <key>LSUIElement</key>
+    <true/>
+    <key>NSScreenCaptureUsageDescription</key>
+    <string>Mac Recorder needs Screen Recording permission to capture system audio for speech recognition.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Mac Recorder needs Microphone access to include your voice in recordings.</string>
+</dict>
+</plist>

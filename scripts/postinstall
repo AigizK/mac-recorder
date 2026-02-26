@@ -1,0 +1,81 @@
+#!/bin/bash
+set -euo pipefail
+
+LOG_FILE="/tmp/macrecorder-postinstall.log"
+touch "$LOG_FILE"
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+phase() {
+  echo "installer:PHASE:$*"
+  echo "[postinstall] PHASE: $*"
+}
+
+status() {
+  echo "installer:STATUS:$*"
+  echo "[postinstall] $*"
+}
+
+progress() {
+  echo "installer:%$1"
+}
+
+echo "==== $(date '+%Y-%m-%d %H:%M:%S') postinstall start ===="
+phase "Configuring MacRecorder runtime"
+progress 5
+
+APP_PATH="/Applications/MacRecorder.app"
+BOOTSTRAP_SCRIPT="$APP_PATH/Contents/Resources/bootstrap_engine.sh"
+ENGINE_TEMPLATE_DIR="$APP_PATH/Contents/Resources/engine-template"
+
+if [[ ! -d "$APP_PATH" ]]; then
+  status "App not found at $APP_PATH"
+  exit 0
+fi
+
+CONSOLE_USER="$(stat -f%Su /dev/console 2>/dev/null || true)"
+if [[ -z "$CONSOLE_USER" || "$CONSOLE_USER" == "root" ]]; then
+  status "No logged-in user detected, skipping engine bootstrap"
+  exit 0
+fi
+
+USER_HOME="$(dscl . -read "/Users/$CONSOLE_USER" NFSHomeDirectory 2>/dev/null | awk '{print $2}')"
+if [[ -z "$USER_HOME" ]]; then
+  USER_HOME="/Users/$CONSOLE_USER"
+fi
+
+SUPPORT_DIR="$USER_HOME/Library/Application Support/MacRecorder"
+ENGINE_DIR="$SUPPORT_DIR/engine"
+HF_CACHE_DIR="$SUPPORT_DIR/hf-cache"
+
+status "Preparing support directory"
+mkdir -p "$SUPPORT_DIR"
+progress 15
+
+if [[ -d "$ENGINE_TEMPLATE_DIR" ]]; then
+  status "Copying bundled engine files"
+  rm -rf "$ENGINE_DIR"
+  mkdir -p "$ENGINE_DIR"
+  cp -R "$ENGINE_TEMPLATE_DIR/." "$ENGINE_DIR/"
+  progress 25
+  status "Engine files copied to $ENGINE_DIR"
+else
+  status "Engine template not found at $ENGINE_TEMPLATE_DIR"
+fi
+
+if [[ -x "$BOOTSTRAP_SCRIPT" && -d "$ENGINE_DIR" ]]; then
+  phase "Installing Python environment and ASR models"
+  progress 30
+  if ! "$BOOTSTRAP_SCRIPT" "$ENGINE_DIR" "$HF_CACHE_DIR"; then
+    status "Bootstrap failed, app will retry at runtime"
+  fi
+else
+  status "Bootstrap script missing or not executable: $BOOTSTRAP_SCRIPT"
+fi
+
+status "Fixing file ownership"
+chown -R "$CONSOLE_USER":staff "$SUPPORT_DIR" || true
+progress 100
+
+phase "Installation complete"
+echo "==== $(date '+%Y-%m-%d %H:%M:%S') postinstall end ===="
+exit 0
