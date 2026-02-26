@@ -1,6 +1,8 @@
 # MacRecorder
 
 > **Important:** Installation can take a while because the installer downloads **two ASR models** upfront (Russian + English) so transcription is ready to use after setup.
+> **Quick start:** You can install the prebuilt package from `dist/MacRecorder-0.2.0.pkg`.
+> Prefer building yourself? See **Build Everything Yourself** at the end of this README.
 
 MacRecorder is a macOS menu bar app that records microphone + system audio and generates transcripts with a local ASR engine.
 
@@ -93,3 +95,28 @@ make installer
 Output package:
 
 - `dist/MacRecorder-0.2.0.pkg`
+
+## Build Everything Yourself
+
+You can build the entire project from source:
+
+1. Install prerequisites: macOS 14+, Swift 5.9+, Python 3.
+2. Build app and Python engine:
+
+```bash
+make build
+```
+
+3. Run locally:
+
+```bash
+make run
+```
+
+4. Build installer package yourself:
+
+```bash
+make installer
+```
+
+The package will be generated in `dist/`.
